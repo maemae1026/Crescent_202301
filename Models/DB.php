@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 
+Dotenv::createImmutable(__DIR__ . '/../')->load();
+
 class DB
 {
     protected $pdoObj;
@@ -13,12 +15,11 @@ class DB
      */
     public function __construct()
     {
-        $env = Dotenv::createImmutable(__DIR__ . '/../')->load();
-        $this->tblNews  = $env['TBL_NEWS'];
-        $this->tblAdmin = $env['TBL_ADMN'];
+        $this->tblNews  = $_SERVER['TBL_NEWS'];
+        $this->tblAdmin = $_SERVER['TBL_ADMN'];
 
         try {
-            $this->pdoObj = new PDO('mysql:host=' . $env['DB_HOST'] . ';dbname=' . $env['DB_NAME'] . '; charset=utf8', $env['DB_USER'], $env['DB_PASS'],
+            $this->pdoObj = new PDO('mysql:host=' . $_SERVER['DB_HOST'] . ';dbname=' . $_SERVER['DB_NAME'] . '; charset=utf8', $_SERVER['DB_USER'], $_SERVER['DB_PASS'],
                 [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_EMULATE_PREPARES   => false,
