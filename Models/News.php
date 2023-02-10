@@ -17,11 +17,11 @@ class News extends DB
      * ニュースの全件を返す
      *
      * @param string|null $desc
-     * @param integer|null $startNum
+     * @param mixed $startNum
      * @param integer $getNum
      * @return array
      */
-    public function all(?string $desc = 'ASC', ?int $startNum = 0, $getNum = 0): array
+    public function all(?string $desc = 'ASC', mixed $startNum = 0, $getNum = 0): array
     {
         try {
             $sql  = 'SELECT';
@@ -112,5 +112,18 @@ class News extends DB
         $stmt = $this->pdoObj->prepare($sql);
         $stmt->bindValue(':id', (INT) $id, PDO::PARAM_INT);
         $stmt->execute();
+    }
+
+    /**
+     * 全件数を返す
+     *
+     * @return array
+     */
+    public function count(): array
+    {
+        $sql  = 'SELECT';
+        $sql .= ' COUNT(*) AS hits';
+        $sql .= ' FROM ' . $this->tblNews;
+        return $this->pdoObj->query($sql)->fetch();
     }
 }
