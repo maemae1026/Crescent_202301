@@ -1,3 +1,65 @@
+<?php declare(strict_types=1);
+require_once dirname(__FILE__) . '/../Models/News.php';
+require_once dirname(__FILE__) . '/../util.inc.php';
+
+const IMG_PATH = '../images/press/';
+
+$posted  = (new DateTime())->format('Y-m-d');
+$title   = '';
+$message = '';
+$image   = '';
+$isValidated = false;
+
+if (!empty($_POST)) {
+    $posted  = $_POST['posted'];
+    $title   = $_POST['title'];
+    $message = $_POST['message'];
+    $isValidated = true;
+
+    if ($title === '' || preg_match('/^(\s|　)+$/u', $title)) {
+        $titleError = '※タイトルを入力して下さい';
+        $isValidated = false;
+    } elseif (mb_strlen($title) > 20) {
+        $titleError = '※タイトルを20文字以内で入力して下さい';
+        $isValidated = false;
+    }
+
+    if ($message === '' || preg_match('/^(\s|　)+$/u', $message)) {
+        $messageError = '※お知らせ内容を入力して下さい';
+        $isValidated = false;
+    }
+
+    if (!empty($_FILES)) {
+        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+            $image = mb_convert_encoding(basename($_FILES['image']['name']), 'cp932', 'utf8');
+            if (!move_uploaded_file(
+                $_FILES['image']['tmp_name'],
+                IMGS_PATH . $image
+            )) {
+                $imageError = '※アップロードに失敗しました';
+                $isValidated = false;
+            }
+        } elseif ($_FILES['image']['error'] == UPLOAD_ERR_NO_FILE) {
+        } else {
+            $imageError = '※アップロードに失敗しました';
+            $isValidated = false;
+        }
+    }
+
+    if ($isValidated === true) {
+        $postArr = [
+            'posted'  => $posted,
+            'title'   => $title,
+            'message' => $message,
+            'image'   => $image
+        ];
+        (new News())->add($postArr);
+        header('Location: news_add_done.php');
+        exit;
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -26,29 +88,36 @@
                     <tr>
                         <th class="fixed">日付(任意)</th>
                         <td>
-                            <div class="error">※日付は「0000-00-00」の形式で入力してください</div>
-                            <input type="date" name="posted">
+                            <input type="date" name="posted" value="<?=h($posted)?>">
                         </td>
                     </tr>
                     <tr>
                         <th class="fixed">タイトル</th>
                         <td>
-                            <div class="error">※タイトルを入力してください</div>
-                            <input type="text" name="title" size="80">
+                            <?php if (isset($titleError)):?>
+                                <div class="error"><?=$titleError?></div>
+                            <?php endif;?>
+                            <input type="text" name="title" size="80" value="<?=h($title)?>">
                         </td>
                     </tr>
                     <tr>
                         <th class="fixed">お知らせの内容</th>
                         <td>
-                            <div class="error">※お知らせ内容を入力してください</div>
-                            <textarea name="message" cols="80" rows="5"></textarea>
+                            <?php if (isset($messageError)):?>
+                                <div class="error"><?=$messageError?></div>
+                            <?php endif;?>
+                            <textarea name="message" cols="80" rows="5"><?=$message?></textarea>
                         </td>
                     </tr>
                     <tr>
                         <th class="fixed">画像(任意)</th>
                         <td>
+                            <?php if (isset($imageError)):?>
+                                <div class="error"><?=$imageError?></div>
+                            <?php endif;?>
                             <input type="file" name="image">
                             <div>画像は64x64ピクセルで表示されます</div>
+                            <img src="<?=IMG_PATH . ($image ?: 'press.jpg')?>" alt="">
                         </td>
                     </tr>
                 </table>

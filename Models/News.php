@@ -24,7 +24,7 @@ class News extends DB
     public function all(?string $desc = 'ASC', ?int $startNum = 0, $getNum = 0): array
     {
         try {
-            $sql = 'SELECT';
+            $sql  = 'SELECT';
             $sql .= ' *';
             $sql .= ' FROM ' . $this->tblNews;
             if ($desc) {
@@ -38,5 +38,23 @@ class News extends DB
             header('Content-Type: text/plain; charset=UTF-8', true, 500);
             exit($e->getMessage());
         }
+    }
+
+    /**
+     * 4つのフォームの値を元に1件のレコードを追加
+     *
+     * @param array|null $postArr
+     * @return void
+     */
+    public function add(array $postArr): void
+    {
+        $sql  = 'INSERT';
+        $sql .= ' INTO ' . $this->tblNews;
+        $sql .= ' (posted_at, title, message, image)';
+        $sql .= ' VALUES ("' . $postArr['posted'] . '", :title, :message, "' . $postArr['image'] . '")';
+        $stmt = $this->pdoObj->prepare($sql);
+        $stmt->bindValue(':title',   $postArr['title'],   PDO::PARAM_STR);
+        $stmt->bindValue(':message', $postArr['message'], PDO::PARAM_STR);
+        $stmt->execute();
     }
 }
