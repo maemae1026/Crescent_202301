@@ -15,7 +15,7 @@ class News extends DB
 
     /**
      * ニュースの全件を返す
-     * 
+     *
      * @param string|null $desc
      * @param integer|null $startNum
      * @param integer $getNum
@@ -55,6 +55,40 @@ class News extends DB
         $stmt = $this->pdoObj->prepare($sql);
         $stmt->bindValue(':title',   $postArr['title'],   PDO::PARAM_STR);
         $stmt->bindValue(':message', $postArr['message'], PDO::PARAM_STR);
+        $stmt->execute();
+    }
+
+    /**
+     * idを元に1件分のデータを取得
+     *
+     * @param string $id
+     * @return array
+     */
+    public function find(string $id): array
+    {
+        $sql  = 'SELECT';
+        $sql .= ' *';
+        $sql .= ' FROM ' . $this->tblNews;
+        $sql .= ' WHERE id=:id';
+        $stmt = $this->pdoObj->prepare($sql);
+        $stmt->bindValue(':id', (int) $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    /**
+     * $idを元に一件分のデータを削除
+     *
+     * @param string $id
+     * @return void
+     */
+    public function delete(string $id): void
+    {
+        $sql  = 'DELETE';
+        $sql .= ' FROM ' . $this->tblNews;
+        $sql .= ' WHERE id=:id';
+        $stmt = $this->pdoObj->prepare($sql);
+        $stmt->bindValue(':id', (INT) $id, PDO::PARAM_INT);
         $stmt->execute();
     }
 }
