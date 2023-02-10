@@ -42,7 +42,7 @@ $news = (new News())->all('desc');
                         <?=$item['message']?>
                     </td>
                     <td class="center">
-                        <img src="<?=IMG_PATH . ($item['image'] ? $item['image'] : 'press.jpg')?>" width="64" height="64" alt="">
+                        <img src="<?=IMG_PATH . ($item['image'] ?: 'press.jpg')?>" width="64" height="64" alt="">
                     <td class="center"><a href="news_edit.php?id=<?=$item['id']?>">編集</a></td>
                     <td class="center"><a href="news_delete.php?id=<?=$item['id']?>">削除</a></td>
                 </tr>

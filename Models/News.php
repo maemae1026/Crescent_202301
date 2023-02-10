@@ -15,11 +15,13 @@ class News extends DB
 
     /**
      * ニュースの全件を返す
-     *
+     * 
      * @param string|null $desc
+     * @param integer|null $startNum
+     * @param integer $getNum
      * @return array
      */
-    public function all(?string $desc): array
+    public function all(?string $desc = 'ASC', ?int $startNum = 0, $getNum = 0): array
     {
         try {
             $sql = 'SELECT';
@@ -27,6 +29,9 @@ class News extends DB
             $sql .= ' FROM ' . $this->tblNews;
             if ($desc) {
                 $sql .= ' ORDER BY posted_at DESC';
+            }
+            if ($getNum > 0) {
+                $sql .= ' LIMIT ' . $startNum . ', ' .  $getNum;
             }
             return $this->pdoObj->query($sql)->fetchAll();
         } catch (PDOException $e) {
