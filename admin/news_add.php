@@ -123,7 +123,7 @@ if (!empty($_POST)) {
                 </table>
                 <p>
                     <input type="submit" name="add" value="追加">
-                    <input type="submit" name="cancel" value="キャンセル">
+                    <input type="submit" value="キャンセル" formaction="index.php">
                 </p>
             </form>
         </main>

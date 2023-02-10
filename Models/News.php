@@ -78,6 +78,26 @@ class News extends DB
     }
 
     /**
+     * 4つのフォームの値とIDを元に1件のレコードを編集
+     *
+     * @param array|null $postArr
+     * @param string $id
+     * @return void
+     */
+    public function update(array $postArr, string $id): void
+    {
+        $sql  = 'UPDATE';
+        $sql .= ' ' . $this->tblNews;
+        $sql .= ' SET posted_at="' . $postArr['posted'] . '", title=:title, message=:message, image="' . $postArr['image'] . '"';
+        $sql .= ' WHERE id=:id';
+        $stmt = $this->pdoObj->prepare($sql);
+        $stmt->bindValue(':title',   $postArr['title'],   PDO::PARAM_STR);
+        $stmt->bindValue(':message', $postArr['message'], PDO::PARAM_STR);
+        $stmt->bindValue(':id', (INT) $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    /**
      * $idを元に一件分のデータを削除
      *
      * @param string $id
