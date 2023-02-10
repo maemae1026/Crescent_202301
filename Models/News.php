@@ -27,6 +27,7 @@ class News extends DB
             $sql  = 'SELECT';
             $sql .= ' *';
             $sql .= ' FROM ' . $this->tblNews;
+            $sql .= ' WHERE deleted_at IS NULL';
             if ($desc) {
                 $sql .= ' ORDER BY posted_at DESC';
             }
@@ -69,7 +70,7 @@ class News extends DB
         $sql  = 'SELECT';
         $sql .= ' *';
         $sql .= ' FROM ' . $this->tblNews;
-        $sql .= ' WHERE id=:id';
+        $sql .= ' WHERE id=:id AND deleted_at IS NULL';
         $stmt = $this->pdoObj->prepare($sql);
         $stmt->bindValue(':id', (int) $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -84,8 +85,9 @@ class News extends DB
      */
     public function delete(string $id): void
     {
-        $sql  = 'DELETE';
-        $sql .= ' FROM ' . $this->tblNews;
+        $sql  = 'UPDATE';
+        $sql .= ' ' . $this->tblNews;
+        $sql .= ' SET deleted_at=NOW()';
         $sql .= ' WHERE id=:id';
         $stmt = $this->pdoObj->prepare($sql);
         $stmt->bindValue(':id', (INT) $id, PDO::PARAM_INT);
