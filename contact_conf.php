@@ -1,3 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+session_start();
+require_once dirname(__FILE__) . '/util.inc.php';
+require_once(dirname(__FILE__) . '/vendor/autoload.php');
+require_once(dirname(__FILE__) . '/settings.php');
+
+if (isset($_SESSION['contact'])) {
+    $contact = $_SESSION['contact'];
+    $name    = $contact['name'];
+    $kana    = $contact['kana'];
+    $email   = $contact['email'];
+    $phone   = $contact['phone'];
+    $inquiry = $contact['inquiry'];
+    $token   = $contact['token'];
+    if ($token !== getToken()) {
+        header('Location: contact.php');
+        exit;
+    }
+} else {
+    header('Location: contact.php');
+    exit;
+}
+
+if (isset($_POST['send'])) {
+    try {
+        $transport = new Swift_SmtpTransport(
+            SMTP_HOST,
+            SMTP_PORT,
+            SMTP_PROTOCOL
+        );
+        $transport->setUsername(GMAIL_SITE);
+        $transport->setPassword(GMAIL_APPPASS);
+        $mailer = new Swift_Mailer($transport);
+        $message = new Swift_Message(MAIL_TITLE);
+        $message->setFrom(MAIL_FROM);
+        $message->setTo(MAIL_TO);
+        $mailBody = <<<EOT
+        <img src="{$message->embed(Swift_Image::fromPath('logo.png'))}">
+        <h2>Crescent Shoes 問い合わせの通知</h2>
+        <p>以下の内容を承りました。</p>
+        <table style="border-collapse:collapse;width:auto">
+        <tr>
+        <th style="padding:10px;border:1px solid #ccc">お名前</th>
+        <td style="padding:10px;border:1px solid #ccc">{$name}</td>
+        </tr>
+        <tr>
+        <th style="padding:10px;border:1px solid #ccc">フリガナ</th>
+        <td style="padding:10px;border:1px solid #ccc">{$kana}</td>
+        </tr>
+        <tr>
+        <th style="padding:10px;border:1px solid #ccc">メールアドレス</th>
+        <td style="padding:10px;border:1px solid #ccc">{$email}</td>
+        </tr>
+        <tr>
+        <th style="padding:10px;border:1px solid #ccc">電話番号</th>
+        <td style="padding:10px;border:1px solid #ccc">{$phone}</td>
+        </tr>
+        <tr>
+        <th style="padding:10px;border:1px solid #ccc">お問い合わせ内容</th>
+        <td style="padding:10px;border:1px solid #ccc">{$inquiry}</td>
+        </tr>
+        </table>
+        EOT;
+        $message->setBody($mailBody, 'text/html');
+        if ($mailer->send($message) == 1) {
+            unset($_SESSION['contact']);
+            header('Location: contact_done.php');
+            exit;
+        } else {
+            header('Location: contact_error.php');
+            exit;
+        }
+    } catch (Exception $e) {
+        exit($e->getMessage());
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -69,30 +149,30 @@
                 <table class="table table-hover table-bordered">
                     <tr>
                         <th>お名前</th>
-                        <td>里中　サチ子</td>
+                        <td><?= h($name) ?></td>
                     </tr>
                     <tr>
                         <th>フリガナ</th>
-                        <td>サトナカ　サチコ</td>
+                        <td><?= h($kana) ?></td>
                     </tr>
                     <tr>
                         <th>メールアドレス</th>
-                        <td>abc@zz.com</td>
+                        <td><?= h($email) ?></td>
                     </tr>
                     <tr>
                         <th>電話番号</th>
-                        <td>03-1234-5678</td>
+                        <td><?= h($phone) ?></td>
                     </tr>
                     <tr>
                         <th>お問い合わせ内容</th>
-                        <td>ショッピングページにはスポーツ用品がありませんが、店舗での取り扱いはありますか？　子供用の野球スパイクを探しています。　また、靴をケアするためのブラシや撥水スプレーなどもあれば、合わせて購入したいです。</td>
+                        <td><?= h(nl2br($inquiry)) ?></td>
                     </tr>
                 </table>
-                <form class="form-horizontal">
+                <form action="" method="post" class="form-horizontal">
                     <div class="form-group">
                         <div class="col-sm-10">
                             <button type="submit" name="send" class="btn btn-success btn-lg">送信する</button>
-                            <button type="submit" name="back" class="btn btn-success btn-lg">修正する</button>
+                            <button type="submit" class="btn btn-success btn-lg" formaction="contact.php">修正する</button>
                         </div>
                     </div>
                 </form>

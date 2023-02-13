@@ -1,3 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+session_start();
+
+require_once dirname(__FILE__) . '/util.inc.php';
+
+$name    = '';
+$kana    = '';
+$email   = '';
+$phone   = '';
+$inquiry = '';
+$mapNone = true;
+$isValidated = false;
+
+if(isset($_SESSION['contact'])) {
+    $contact = $_SESSION['contact'];
+    $name    = $contact['name'];
+    $kana    = $contact['kana'];
+    $email   = $contact['email'];
+    $phone   = $contact['phone'];
+    $inquiry = $contact['inquiry'];
+    $mapNone = $contact['mapNone'];
+}
+
+if (!empty($_POST)) {
+    $name    = $_POST['name'];
+    $kana    = $_POST['kana'];
+    $phone   = $_POST['phone'];
+    $email   = $_POST['email'];
+    $token   = $_POST['token'];
+    $inquiry = $_POST['inquiry'];
+
+    $mapNone = false;
+    $isValidated = true;
+
+    if ($name === '' || preg_match('/^(\s|　)+$/u', $name)) {
+        $nameError = '※お名前を入力してください';
+        $isValidated = false;
+    }
+
+    if ($kana === '' || preg_match('/^(\s|　)+$/u', $kana)) {
+        $kanaError = '※フリガナを入力してください';
+        $isValidated = false;
+    } elseif (!preg_match('/^[ァ-ヶー 　]+$/u', $kana)) {
+        $kanaError = '※全角カタカナで入力してください';
+        $isValidated = false;
+    }
+
+    if ($email === '' || preg_match('/^(\s|　)+$/u', $email)) {
+        $emailError = '※メールアドレスを入力してください';
+        $isValidated = false;
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $emailError = '※メールアドレスの形式が正しくありません';
+        $isValidated = false;
+    }
+
+    if ($inquiry === '' || preg_match('/^(\s|　)+$/u', $inquiry)) {
+        $inquiryError = '※お問い合わせ内容を入力してください';
+        $isValidated = false;
+    }
+
+    if ($isValidated === true) {
+        $contact = [
+            'name'    => $name,
+            'kana'    => $kana,
+            'email'   => $email,
+            'phone'   => $phone,
+            'inquiry' => $inquiry,
+            'token'   => $token,
+            'mapNone' => false
+        ];
+        $_SESSION['contact'] = $contact;
+
+        header('Location: contact_conf.php');
+        exit;
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -56,6 +137,7 @@
                 </nav>
             </div>
         </div>
+        <?php if ($mapNone): ?>
         <div class="row">
             <div class="col-md-8">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6479.926203846024!2d139.7001925!3d35.702525600000016!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188d2f6cba44df%3A0x18b3bc4c95b9f078!2z44CSMTY5LTAwNzMg5p2x5Lqs6YO95paw5a6_5Yy655m-5Lq655S677yS5LiB55uu77yU4oiS77yY!5e0!3m2!1sja!2sjp!4v1439870260921" width="100%" height="400px" frameborder="0" style="border:0" allowfullscreen></iframe>
@@ -72,6 +154,7 @@
                     月-金曜日: 9:00 AM to 5:00 PM</p>
             </div>
         </div>
+        <?php endif;?>
         <div class="row">
             <div class="col-md-4 hidden-sm hidden-xs contactleft">
                 <div class="contact-img">
@@ -80,39 +163,52 @@
             </div>
             <div class="col-md-8">
                 <h3 class="page-header">Send Message</h3>
-                <form class="form-horizontal">
+                <form action="" method="post" class="form-horizontal" novalidate>
+                    <input type="hidden" name="token" value="<?= getToken(); ?>">
                     <div class="form-group">
                         <label for="inputname" class="col-sm-3 control-label">お名前<span>(必須)</span></label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="inputname" required>
+                            <?php if (isset($nameError)):?>
+                                <div class="text-warning"><?=$nameError?></div>
+                            <?php endif;?>
+                            <input type="text" class="form-control" id="inputname" name="name" value="<?= h($name) ?>">
                             <p class="help-block">(例)山田　太郎</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputkana" class="col-sm-3 control-label">フリガナ<span>(必須)</span></label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" id="inputkana" required>
+                            <?php if (isset($kanaError)):?>
+                                <div class="text-warning"><?=$kanaError?></div>
+                            <?php endif;?>
+                            <input type="text" class="form-control" id="inputkana" name="kana" value="<?= h($kana) ?>">
                             <p class="help-block">(例)ヤマダ　タロウ ※全角カタカナ</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputemail" class="col-sm-3 control-label">メールアドレス<span>(必須)</span></label>
                         <div class="col-sm-9">
-                            <input type="email" class="form-control" id="inputemail" required>
+                            <?php if (isset($emailError)):?>
+                                <div class="text-warning"><?=$emailError?></div>
+                            <?php endif;?>
+                            <input type="email" class="form-control" id="inputemail" name="email" value="<?= h($email) ?>">
                             <p class="help-block">(例)abc@zz.com ※半角英数字</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputtel" class="col-sm-3 control-label">電話番号</label>
                         <div class="col-sm-9">
-                            <input type="tel" class="form-control" id="inputtel">
+                            <input type="tel" class="form-control" name="phone" value="<?= h($phone) ?>" id="inputtel">
                             <p class="help-block">(例)03-1234-3214　※ハイフンあり　半角数字</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputmessage" class="col-sm-3 control-label">お問い合わせ内容<span>(必須)</span></label>
                         <div class="col-sm-9">
-                            <textarea rows="10" cols="100" class="form-control" id="message" required maxlength="999" style="resize:none"></textarea>
+                            <?php if (isset($inquiryError)):?>
+                                <div class="text-warning"><?=$inquiryError?></div>
+                            <?php endif;?>
+                            <textarea rows="10" cols="100" class="form-control" id="message" name="inquiry" maxlength="999" style="resize:none"><?= h($inquiry) ?></textarea>
                         </div>
                     </div>
                     <div class="form-group">
