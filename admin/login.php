@@ -1,3 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+session_start();
+
+require_once dirname(__FILE__) . '/../Models/Admins.php';
+require_once dirname(__FILE__) . '/../util.inc.php';
+
+$id   = '';
+$pass = '';
+$isValidated = false;
+if (!empty($_POST)) {
+    $id   = $_POST['id'];
+    $pass = $_POST['pass'];
+    $isValidated = true;
+
+    if ($id === '' || preg_match('/^(\s|　)+$/u', $id)) {
+        $idError = 'ログインIDを入力してください。';
+        $isValidated = false;
+    }
+
+    if ($pass === '' || preg_match('/^(\s|　)+$/u', $pass)) {
+        $passError = 'パスワードを入力してください。';
+        $isValidated = false;
+    }
+
+    if ($isValidated === true && (new Admins())->login($id, $pass)) {
+        session_regenerate_id(true);
+        $_SESSION['admin_id']    = $id;
+        $_SESSION['admin_login'] = true;
+
+        header('Location: index.php');
+        exit;
+    } else {
+        $loginError = 'ログインIDまたはパスワードに誤りがあります。';
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -16,18 +56,18 @@
     <div id="container">
         <main>
             <h1>ログイン</h1>
-            <p class="error">ログインIDを入力してください。</p>
-            <p class="error">パスワードを入力してください。</p>
-            <p class="error">ログインIDまたはパスワードに誤りがあります。</p>
+            <?php if (isset($idError)) : ?><p class="error"><?= $idError ?></p><?php endif; ?>
+            <?php if (isset($passError)) : ?><p class="error"><?= $passError ?></p><?php endif; ?>
+            <?php if (isset($loginError)) : ?><p class="error"><?= $loginError ?></p><?php endif; ?>
             <form action="" method="post">
                 <table id="loginbox">
                     <tr>
                         <th>ログインID</th>
-                        <td><input type="text" name="id"></td>
+                        <td><input type="text" name="id" value="<?=h($id)?>"></td>
                     </tr>
                     <tr>
                         <th>パスワード</th>
-                        <td><input type="password" name="pass"></td>
+                        <td><input type="password" name="pass" value="<?=h($pass)?>"></td>
                     </tr>
                 </table>
                 <p><input type="submit" value="ログイン"></p>
