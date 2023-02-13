@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 session_start();
 
+if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] == true) {
+    header('Location: index.php');
+    exit;
+}
+
 require_once dirname(__FILE__) . '/../Models/Admins.php';
 require_once dirname(__FILE__) . '/../util.inc.php';
 
@@ -27,8 +32,8 @@ if (!empty($_POST)) {
 
     if ($isValidated === true && (new Admins())->login($id, $pass)) {
         session_regenerate_id(true);
-        $_SESSION['admin_id']    = $id;
-        $_SESSION['admin_login'] = true;
+        $_SESSION['login_id']      = $id;
+        $_SESSION['authenticated'] = true;
 
         header('Location: index.php');
         exit;

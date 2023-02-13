@@ -1,9 +1,17 @@
 <?php
 
 declare(strict_types=1);
+
+session_start();
+require_once dirname(__FILE__) . '/auth.inc.php';
+authConfirm();
+
 require_once dirname(__FILE__) . '/../Models/News.php';
+require_once dirname(__FILE__) . '/../util.inc.php';
+
 const IMG_PATH = '../images/press/';
 const NUM_PER_PAGE = 5;
+
 $pdo = new News();
 $numPages = ceil($pdo->count()['hits'] / NUM_PER_PAGE);
 $page = $_GET['p'] ?? 1;
@@ -26,10 +34,7 @@ $news = $pdo->all('desc', $offset, NUM_PER_PAGE);
     <header class="pt-3 pb-4 mb-3">
         <div class="inner">
             <span><a href="index.php">Crescent Shoes 管理</a></span>
-            <div id="account">
-                admin
-                [ <a href="logout.php">ログアウト</a> ]
-            </div>
+            <?php include dirname(__FILE__) . '/account.parts.php';?>
         </div>
     </header>
     <div id="container">
@@ -44,7 +49,7 @@ $news = $pdo->all('desc', $offset, NUM_PER_PAGE);
                         </li>
                     <?php else : ?>
                         <li class="page-item">
-                            <a href="<?=$prevNum?>" class="page-link">前のページへ</a>
+                            <a href="?p=<?=$prevNum?>" class="page-link">前のページへ</a>
                         </li>
                     <?php endif; ?>
                     <?php for ($i = 1; $i <= $numPages; $i++) : ?>
@@ -64,7 +69,7 @@ $news = $pdo->all('desc', $offset, NUM_PER_PAGE);
                         </li>
                     <?php else : ?>
                         <li class="page-item">
-                            <a href="<?=$nextNum?>" class="page-link">次のページへ</a>
+                            <a href="?p=<?=$nextNum?>" class="page-link">次のページへ</a>
                         </li>
                     <?php endif; ?>
                 </ul>
