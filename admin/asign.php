@@ -64,7 +64,7 @@ $admins = $pdo->all();
 
 <head>
     <meta charset="UTF-8">
-    <title>ログイン | Crescent Shoes 管理</title>
+    <title>アサイン | Crescent Shoes 管理</title>
     <link rel="stylesheet" href="css/admin.css">
 </head>
 
@@ -76,7 +76,7 @@ $admins = $pdo->all();
     </header>
     <div id="container">
         <main>
-            <h1>ログイン</h1>
+            <h1>アサイン</h1>
             <?php if (isset($idError)) : ?><p class="error"><?= $idError ?></p><?php endif; ?>
             <?php if (isset($passError)) : ?><p class="error"><?= $passError ?></p><?php endif; ?>
             <?php if (isset($retypeError)) : ?><p class="error"><?= $retypeError ?></p><?php endif; ?>
